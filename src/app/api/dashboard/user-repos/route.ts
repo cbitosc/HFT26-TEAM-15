@@ -1,10 +1,7 @@
 import { auth } from "@/lib/auth";
+import { getGitHubAccessTokenForUser } from "@/lib/services/github-account";
 import { NextResponse } from "next/server";
 import { getInvalidSessionApiError, getSessionAuthState, getSessionUserId } from "@/lib/session-guard";
-
-type SessionWithAccessToken = {
-    accessToken?: string;
-};
 
 export async function GET() {
     const session = await auth();
@@ -17,30 +14,25 @@ export async function GET() {
         return NextResponse.json(getInvalidSessionApiError(), { status: 401 });
     }
 
-    if (!getSessionUserId(session)) {
+    const userId = getSessionUserId(session);
+    if (!userId) {
         return NextResponse.json(getInvalidSessionApiError(), { status: 401 });
     }
 
-    const accessToken = (session as SessionWithAccessToken).accessToken;
-    // Fall back to the global token if the user hasn't explicitly authorized their own account token
-    // Note: The global token won't have access to the user's private repos, only public ones.
-    const tokenToUse = accessToken || process.env.GITHUB_TOKEN;
-
-    if (!tokenToUse) {
-        return NextResponse.json({ error: "No GitHub token available" }, { status: 500 });
-    }
-
     try {
+        const accessToken = await getGitHubAccessTokenForUser(userId);
+        const tokenToUse = accessToken;
+        if (!tokenToUse) return NextResponse.json({ error: "No GitHub token available" }, { status: 500 });
         const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=100", {
             headers: {
                 Authorization: `Bearer ${tokenToUse}`,
                 Accept: "application/vnd.github.v3+json",
             },
-            next: { revalidate: 60 } // Cache for 1 minute
+            cache: "no-store",
         });
 
         if (!res.ok) {
-            console.error("GitHub API error fetching user repos", await res.text());
+            console.error("GitHub API error fetching user repos", { status: res.status });
             return NextResponse.json({ error: "Failed to fetch repositories" }, { status: res.status });
         }
 
@@ -49,7 +41,7 @@ export async function GET() {
 
         // Check if the token we used was the user's specific access token (which implies we requested scopes)
         // If they have private repos returned, or if they successfully used an access_token, we assume they have private access.
-        const hasPrivateAccess = !!accessToken && repos.length > 0;
+        const hasPrivateAccess = repos.some((repo: unknown) => !!repo && typeof repo === "object" && "private" in repo && repo.private === true);
 
         return NextResponse.json({
             repos,

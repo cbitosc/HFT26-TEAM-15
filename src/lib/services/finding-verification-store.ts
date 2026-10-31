@@ -1,9 +1,4 @@
-import {
-    FindingGateDecision,
-    FindingLifecycleStatus,
-    FixVerificationRunStatus,
-    type Prisma,
-} from "@prisma/client";
+import { FindingGateDecision, FindingLifecycleStatus, FixVerificationRunStatus, type Prisma } from "@prisma/client";
 import { kv } from "@vercel/kv";
 
 import { prisma } from "@/lib/db";
@@ -88,10 +83,23 @@ export async function saveScanFindingVerificationRecords(input: {
         };
     });
 
-    await prisma.scanFindingVerification.createMany({
-        data: createRows,
-        skipDuplicates: true,
-    });
+    try {
+        await prisma.scanFindingVerification.createMany({ data: createRows });
+    } catch (error) {
+        if (!error || typeof error !== "object" || !("code" in error) || error.code !== "P2002") throw error;
+
+        await prisma.$transaction(createRows.map((row) => prisma.scanFindingVerification.upsert({
+            where: {
+                scanId_findingFingerprint_findingIndex: {
+                    scanId: row.scanId,
+                    findingFingerprint: row.findingFingerprint,
+                    findingIndex: row.findingIndex,
+                },
+            },
+            create: row,
+            update: {},
+        })));
+    }
 
     const reopenCount = createRows.filter((row) => row.reopenedAt !== null).length;
     if (reopenCount > 0) {

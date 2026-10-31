@@ -65,10 +65,10 @@ function mapRecord(record: {
     file: string;
     line: number | null;
     confidence: string | null;
-    reason: ReportFalsePositiveReason;
+    reason: string;
     details: string;
     isSharedView: boolean;
-    status: ReportFalsePositiveStatus;
+    status: string;
     submittedByUserId: string | null;
     submittedByUser: { githubLogin: string | null } | null;
     reviewedByUser: { githubLogin: string | null } | null;
@@ -89,10 +89,10 @@ function mapRecord(record: {
         file: record.file,
         line: record.line,
         confidence: record.confidence,
-        reason: record.reason,
+        reason: record.reason as ReportFalsePositiveReason,
         details: record.details,
         isSharedView: record.isSharedView,
-        status: record.status,
+        status: record.status as ReportFalsePositiveStatus,
         submittedByUserId: record.submittedByUserId,
         submittedByGithubLogin: record.submittedByUser?.githubLogin ?? null,
         reviewedByGithubLogin: record.reviewedByUser?.githubLogin ?? null,

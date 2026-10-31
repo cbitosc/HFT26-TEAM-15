@@ -43,6 +43,7 @@ describe("executeRepoQueryStream", () => {
             owner: "acme",
             repo: "widget",
             filePaths: ["src/index.ts"],
+            fileShas: { "src/index.ts": "sha-index" },
         })) {
             updates.push(update);
         }
@@ -74,6 +75,7 @@ describe("executeRepoQuery", () => {
                 owner: "acme",
                 repo: "widget",
                 filePaths: ["src/index.ts", "public/logo.png"],
+                fileShas: { "src/index.ts": "sha-index" },
             },
             { analyzeFiles }
         );
@@ -93,10 +95,12 @@ describe("executeRepoQuery", () => {
         const fetchFiles = vi.fn().mockResolvedValue([
             { path: "src/core.ts", content: "export const value = 1;" },
         ]);
-        const streamAnswer = async function* () {
+        let capturedContext = "";
+        const streamAnswer = vi.fn(async function* (_question: string, context: string) {
+            capturedContext = context;
             yield "First ";
             yield "Second";
-        };
+        });
 
         const result = await executeRepoQuery(
             {
@@ -104,6 +108,7 @@ describe("executeRepoQuery", () => {
                 owner: "acme",
                 repo: "widget",
                 filePaths: ["src/core.ts"],
+                fileShas: { "src/core.ts": "sha-core" },
             },
             { analyzeFiles, fetchFiles, streamAnswer }
         );
@@ -112,13 +117,15 @@ describe("executeRepoQuery", () => {
             answer: "First Second",
             relevantFiles: ["src/core.ts"],
         });
+        expect(capturedContext).toContain("--- UNTRUSTED REPOSITORY FILE: src/core.ts ---\n    1 | export const value = 1;");
         expect(cacheRepoQueryAnswerMock).toHaveBeenCalledWith(
             "acme",
             "widget",
             "summarize core logic",
             ["src/core.ts"],
             "First Second",
-            undefined
+            undefined,
+            expect.any(String)
         );
     });
 
@@ -130,7 +137,15 @@ describe("executeRepoQuery", () => {
         const fetchFiles = vi.fn().mockResolvedValue([
             { path: "src/core.ts", content: "export const value = 1;" },
         ]);
-        const streamAnswer = vi.fn(async function* () {
+        const streamAnswer = vi.fn(async function* (
+            _query: string,
+            _context: string,
+            _repository: { owner: string; repo: string },
+            _profileData: unknown,
+            _history: unknown,
+            _modelPreference: unknown,
+            _disableToolCalls?: boolean,
+        ) {
             yield "No-tool response";
         });
 
@@ -140,6 +155,7 @@ describe("executeRepoQuery", () => {
                 owner: "acme",
                 repo: "widget",
                 filePaths: ["src/core.ts"],
+                fileShas: { "src/core.ts": "sha-core" },
                 disableToolCalls: true,
             },
             { analyzeFiles, fetchFiles, streamAnswer }

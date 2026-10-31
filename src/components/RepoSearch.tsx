@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Loader2, TrendingUp } from "lucide-react";
+import { ArrowRight, FileArchive, Loader2, TrendingUp } from "lucide-react";
 import { getRepoSuggestions } from "@/app/actions";
 import SuggestionsList from "./SuggestionsList";
 import type { RepoSuggestion } from "@/lib/services/repo-suggestions";
@@ -155,6 +155,10 @@ export default function RepoSearch({
                     )}
                 </AnimatePresence>
             </form>
+
+            <Link href="/upload" className="mt-3 inline-flex items-center gap-2 rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white">
+                <FileArchive size={16} /> Upload a ZIP instead
+            </Link>
 
             <div className="mt-4 md:mt-6 flex flex-col items-center gap-4 md:gap-6 w-full">
                 <div className="flex flex-wrap justify-center items-center gap-2 md:gap-4 text-[10px] sm:text-xs md:text-sm text-zinc-500">

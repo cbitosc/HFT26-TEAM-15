@@ -24,6 +24,7 @@ import type { StreamUpdate } from "@/lib/streaming-types";
 import type { GitHubProfile } from "@/lib/github";
 import type { ModelPreference } from "@/lib/ai-client";
 import { stripEmojiCharacters } from "@/lib/no-emoji";
+import { getFileShaCacheIdentity, getRepositoryIntelligenceContext, type RepositoryIntelligenceQueryContext } from "@/lib/repo-intelligence/context";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -46,6 +47,7 @@ export interface RepoQueryParams {
  * making this useful for tests (inject stubs) without affecting production.
  */
 export interface QueryPipelineDeps {
+    getIntelligenceContext?: (owner: string, repo: string, policy: FileCachePolicy, query: string, candidatePaths: string[], fileShas?: Record<string, string>) => Promise<RepositoryIntelligenceQueryContext>;
     /** Selects relevant files for a query — defaults to AI-based selection */
     analyzeFiles?: (
         query: string,
@@ -205,10 +207,17 @@ export async function* executeRepoQueryStream(
         let contextBuildMs = 0;
         let answerMs = 0;
 
+        const basePaths = pruneFilePaths(filePaths);
+        const getIntelligenceContext = deps.getIntelligenceContext ?? getRepositoryIntelligenceContext;
+        const intelligenceContext = fileCachePolicy
+            ? await getIntelligenceContext(owner, repo, fileCachePolicy, query, basePaths, fileShas)
+            : { context: "", priorityPaths: basePaths, cacheIdentity: getFileShaCacheIdentity(fileShas) };
+        const cacheIdentity = intelligenceContext.cacheIdentity;
+
         // Step 0: Short-circuit check
         // Check if we have ANY recent answer for this exact query in this repo.
         // This bypasses file selection, fetching, and AI generation entirely (0.1s hit).
-        const shortCircuit = await getLatestRepoQueryAnswer(owner, repo, query, fileCachePolicy);
+        const shortCircuit = cacheIdentity ? await getLatestRepoQueryAnswer(owner, repo, query, fileCachePolicy, cacheIdentity) : null;
         if (shortCircuit) {
             console.log(`[query-pipeline] Short-circuit cache hit: ${owner}/${repo} -> ${query}`);
             yield {
@@ -228,7 +237,7 @@ export async function* executeRepoQueryStream(
             progress: 15,
         };
 
-        const prunedPaths = pruneFilePaths(filePaths);
+        const prunedPaths = intelligenceContext.priorityPaths;
         const selectionStartMs = Date.now();
         let selectionStatus: "indexed_tree" | "agentic_scan" | null = null;
         const relevantFiles = await analyzeFiles(
@@ -319,6 +328,7 @@ export async function* executeRepoQueryStream(
         const contextBuildStartMs = Date.now();
         let context =
             `\n--- REPOSITORY FOLDER STRUCTURE ---\n${folderStructure}\n` +
+            (intelligenceContext.context ? `\n${intelligenceContext.context}\n` : "") +
             `\n--- SELECTED FILES ---\n${selectedFilesList}\n`;
 
         let tokenTotal = countTokens(context);
@@ -326,13 +336,14 @@ export async function* executeRepoQueryStream(
 
         for (const { path, content } of fileResults) {
             if (!content) continue;
-            const tokens = countTokens(content);
+            const numberedContent = content.split(/\r?\n/).map((line, index) => `${String(index + 1).padStart(5, " ")} | ${line}`).join("\n");
+            const tokens = countTokens(numberedContent);
             if (tokenTotal + tokens > MAX_TOKENS) {
                 context += `\n--- NOTE: Context truncated at ${MAX_TOKENS.toLocaleString()} token limit ---\n`;
                 contextTruncated = true;
                 break;
             }
-            context += `\n--- FILE: ${path} ---\n${content}\n`;
+            context += `\n--- UNTRUSTED REPOSITORY FILE: ${path} ---\n${numberedContent}\n`;
             tokenTotal += tokens;
         }
         contextBuildMs = Date.now() - contextBuildStartMs;
@@ -479,7 +490,12 @@ export async function executeRepoQuery(
 
     // Attempt cache hit first
     const { analyzeFiles = analyzeFileSelection } = deps;
-    const prunedPaths = pruneFilePaths(params.filePaths);
+    const basePaths = pruneFilePaths(params.filePaths);
+    const getIntelligenceContext = deps.getIntelligenceContext ?? getRepositoryIntelligenceContext;
+    const intelligenceContext = params.fileCachePolicy
+        ? await getIntelligenceContext(params.owner, params.repo, params.fileCachePolicy, params.query, basePaths, params.fileShas)
+        : { context: "", priorityPaths: basePaths, cacheIdentity: getFileShaCacheIdentity(params.fileShas) };
+    const prunedPaths = intelligenceContext.priorityPaths;
     const selectedFiles = await analyzeFiles(
         params.query,
         prunedPaths,
@@ -489,13 +505,14 @@ export async function executeRepoQuery(
         params.history,
         params.fileCachePolicy
     );
-    const cached = await getCachedRepoQueryAnswer(
+    const cached = intelligenceContext.cacheIdentity ? await getCachedRepoQueryAnswer(
         params.owner,
         params.repo,
         params.query,
         selectedFiles,
-        params.fileCachePolicy
-    );
+        params.fileCachePolicy,
+        intelligenceContext.cacheIdentity
+    ) : null;
 
     if (cached) {
         console.log(`[query-pipeline] AI response cache hit for ${params.owner}/${params.repo}: ${params.query}`);
@@ -513,14 +530,15 @@ export async function executeRepoQuery(
     }
 
     // Save to cache after complete response
-    if (answer) {
+    if (answer && intelligenceContext.cacheIdentity) {
         await cacheRepoQueryAnswer(
             params.owner,
             params.repo,
             params.query,
             relevantFiles,
             answer,
-            params.fileCachePolicy
+            params.fileCachePolicy,
+            intelligenceContext.cacheIdentity
         );
     }
 

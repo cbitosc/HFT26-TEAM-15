@@ -3,7 +3,6 @@
 <p align="center"><strong>Stop reading code. Start talking to it.</strong></p>
 
 <p align="center">
-  <a href="https://github.com/403errors/repomind"><img src="https://img.shields.io/github/stars/403errors/repomind?style=social" alt="GitHub stars" /></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" /></a>
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16-black" alt="Next.js" /></a>
   <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/Gemini-3.8_Flash-blue" alt="Gemini" /></a>
@@ -122,6 +121,20 @@ RepoMind includes a verification-first scanning flow for application and depende
 
 ![Security Report](public/assets/security_report.png)
 
+## Repository Intelligence
+
+Repository profiles include a deterministic source intelligence workspace. It records the branch and commit analyzed, reports file coverage, extracts source imports/routes/symbols, inventories dependencies, and links findings to the inspected GitHub blob. A bounded interactive import graph and source explorer help navigate unfamiliar repositories. Exact dependency versions are checked against OSV; ranges and unavailable lookups remain clearly labeled.
+
+Analyses never execute repository code. Public repository analysis works with the app's configured GitHub access; private repository analysis requires an authenticated account with server-side GitHub authorization. OAuth credentials are not exposed in browser session data.
+
+See [Repository Intelligence setup, API, limits and known limitations](docs/repository-intelligence.md). Local development uses SQLite; see [deployment notes](docs/deployment.md) for persistence requirements and the Vercel limitation.
+
+You can also select **Upload a ZIP instead** from the homepage to inspect a source archive without linking it to a GitHub repository. ZIP analysis covers source structure, imports, technologies, dependency inventory, supported OSV checks, and an in-browser source explorer. The source explorer includes a directed file/class/function graph with statically resolved call links. It does not enable GitHub chat, profile features, or repository security scans for the uploaded archive.
+
+### Collaboration rooms
+
+Signed-in developers can create invite-only rooms for a shared goal, optionally attach a GitHub repository, discuss progress, and maintain a shared task board. Room owners can create or rotate a single-use invite secret; invite links require GitHub sign-in. Each room supports up to eight members. Room discussion refreshes every eight seconds; this is polling, not live WebSocket chat. See [collaboration room implementation and API](docs/collaboration-rooms.md).
+
 ## Dashboard Experience
 
 ![Dashboard Overview](public/assets/dashboard_overview.png)
@@ -144,22 +157,24 @@ RepoMind includes a verification-first scanning flow for application and depende
 
 #### Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+
 - npm
-- GitHub token
-- Gemini API key
+- GitHub token and Gemini API key for repository analysis and AI chat (optional for starting the site)
 
 #### Setup
 
 ```bash
 git clone https://github.com/403errors/repomind.git
 cd repomind
-npm install
+npm ci
 cp .env.example .env.local
+npm run prisma:generate
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Set `DATABASE_URL="file:./dev.db"` in `.env.local`. `npm run dev` creates the local SQLite file and applies its migrations automatically. GitHub repository analysis needs `GITHUB_TOKEN`; grounded AI chat needs `GEMINI_API_KEY`; GitHub OAuth login needs `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, and `AUTH_SECRET`. Keep every credential server-side. See [repository intelligence setup](docs/repository-intelligence.md) and [deployment notes](docs/deployment.md).
+
+Open [http://localhost:3000](http://localhost:3000). The existing application has additional integrations (KV, Blob, Resend) for their respective features; see `.env.example` for their settings.
 
 ### Model Environment Variables
 
@@ -288,6 +303,5 @@ Licensed under the MIT License. See [LICENSE](LICENSE).
 
 <p align="center">
   Built by <a href="https://github.com/403errors">403errors</a> ·
-  <a href="https://github.com/403errors/repomind">Star on GitHub</a> ·
   <a href="https://github.com/403errors/repomind/issues">Report Issue</a>
 </p>

@@ -46,9 +46,6 @@ const authConfig: NextAuthConfig = {
             if (typeof token.username === "string" && session.user) {
                 session.user.username = token.username;
             }
-            if (typeof token.accessToken === "string") {
-                session.accessToken = token.accessToken;
-            }
             if (typeof token.oauthScope === "string") {
                 session.oauthScope = token.oauthScope;
             }

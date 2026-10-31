@@ -7,22 +7,13 @@ if (!process.env.VERCEL) {
   config();
 }
 
-const prismaCliDatabaseUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
-
-if (process.env.VERCEL && !process.env.DIRECT_URL) {
-  throw new Error(
-    "DIRECT_URL is required on Vercel for Prisma migrations. Use the non-pooled Neon connection URL.",
-  );
-}
-
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
-    path: "prisma/migrations",
+    path: "prisma/migrations-sqlite",
   },
   engine: "classic",
   datasource: {
-    // Avoid running migrations through pooled URLs; advisory locks require a direct connection.
-    url: prismaCliDatabaseUrl ?? env("DATABASE_URL"),
+    url: process.env.DATABASE_URL ?? env("DATABASE_URL"),
   },
 });

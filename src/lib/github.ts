@@ -1,4 +1,5 @@
 import { Octokit } from "octokit";
+import type { ThrottlingOptions } from "@octokit/plugin-throttling";
 import {
   cacheFile,
   getCachedFile,
@@ -114,22 +115,39 @@ if (!githubToken) {
   console.warn("⚠️ GITHUB_TOKEN environment variable is not set - API rate limits will be very restrictive");
 }
 
-export const octokit = new Octokit({
-  auth: githubToken,
-  request: {
-    // NOTE: cache:"no-store" disables HTTP caching for all GitHub API calls.
-    // This is intentional — it prevents stale data in edge/serverless deployments
-    // where the module reloads frequently. Caching is handled at the application
-    // layer via KV (see cache.ts) using SHA-based keys for automatic invalidation.
-    fetch: (url: string, options?: RequestInit) => {
-      return fetch(url, {
-        ...options,
-        cache: "no-store",
-        next: { revalidate: 0 }
-      });
+export function createGitHubClient(token: string | undefined = githubToken, timeoutMs?: number): Octokit {
+    const throttle: ThrottlingOptions = {
+        onRateLimit: (retryAfter, requestOptions, client) => {
+            client.log.warn(`GitHub rate limit reached for ${requestOptions.method} ${requestOptions.url} (retry after ${retryAfter}s).`);
+            return false;
+        },
+        onSecondaryRateLimit: (_retryAfter, requestOptions, client) => {
+            client.log.warn(`GitHub secondary rate limit reached for ${requestOptions.method} ${requestOptions.url}.`);
+            return false;
+        },
+    };
+  return new Octokit({
+    auth: token,
+        throttle,
+        retry: { retries: 0 },
+    request: {
+      // Application caches are SHA-keyed; skip hidden HTTP caches so stale blobs are not reused.
+            fetch: (url: string, options?: RequestInit) => {
+                const timeoutSignal = timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined;
+                const signals = [options?.signal, timeoutSignal].filter((signal): signal is AbortSignal => Boolean(signal));
+                const signal = signals.length > 1 ? AbortSignal.any(signals) : signals[0];
+                return fetch(url, {
+                    ...options,
+                    cache: "no-store",
+                    next: { revalidate: 0 },
+                    ...(signal ? { signal } : {}),
+                });
+            },
     },
-  },
-});
+  });
+}
+
+export const octokit = createGitHubClient();
 
 // In-memory caches for the current process lifetime.
 // NOTE: In Vercel serverless functions these Maps are effectively useless as a

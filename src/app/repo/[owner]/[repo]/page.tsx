@@ -234,6 +234,12 @@ export default async function RepoPage({ params }: Props) {
                             Chat with Codebase
                         </Link>
                         <Link
+                            href={`/repo/${owner}/${repo}/intelligence`}
+                            className="inline-flex items-center justify-center px-6 py-3.5 border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-sm font-medium rounded-xl text-blue-100 transition-colors"
+                        >
+                            <Search className="w-4 h-4 mr-2" /> Repository Intelligence
+                        </Link>
+                        <Link
                             href={`/chat?q=${owner}/${repo}&prompt=architecture`}
                             className="inline-flex items-center justify-center px-6 py-3.5 border border-zinc-700 bg-zinc-800/50 hover:bg-zinc-700 text-sm font-medium rounded-xl text-white transition-colors"
                         >
@@ -246,6 +252,12 @@ export default async function RepoPage({ params }: Props) {
                         >
                             <AlertCircle className="w-4 h-4 mr-2" />
                             Security Audit
+                        </Link>
+                        <Link
+                            href={`/chat?q=${owner}/${repo}&prompt=review`}
+                            className="inline-flex items-center justify-center px-6 py-3.5 border border-zinc-700 bg-zinc-800/50 hover:bg-zinc-700 text-sm font-medium rounded-xl text-white transition-colors"
+                        >
+                            <FileCode className="w-4 h-4 mr-2" /> Code Review
                         </Link>
                         <Link
                             href={`/chat?q=${owner}/${repo}&prompt=explain`}

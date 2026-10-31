@@ -11,7 +11,6 @@ import TrustedByMarquee from "@/components/TrustedByMarquee";
 import InteractiveDemo from "@/components/InteractiveDemo";
 import BentoFeatures from "@/components/BentoFeatures";
 import SecurityBanner from "@/components/SecurityBanner";
-import { GitHubBadge } from "@/components/GitHubBadge";
 import { CAGBadge } from "@/components/CAGBadge";
 import CAGComparison from "@/components/CAGComparison";
 import { WhatsNewBadge } from "@/components/WhatsNewBadge";
@@ -106,11 +105,8 @@ export default function HomeClient({
                 <div className="absolute bottom-[-20%] right-[-10%] w-[80vw] max-w-[500px] h-[80vw] max-h-[500px] bg-blue-600/30 rounded-full blur-[80px] md:blur-[128px]" />
             </div>
 
-            <div className="fixed top-4 left-4 md:top-6 md:left-6 z-[100]">
-                <GitHubBadge />
-            </div>
-
-            <div className="fixed top-4 right-4 md:top-6 md:right-6 z-[100]">
+            <div className="fixed top-4 right-4 md:top-6 md:right-6 z-[100] flex items-center gap-2">
+                {session && <Link href="/collaboration" className="rounded-full border border-white/15 bg-black/50 px-3 py-2 text-xs text-zinc-200 backdrop-blur hover:border-blue-400/50">Collaboration</Link>}
                 <AuthButton />
             </div>
 

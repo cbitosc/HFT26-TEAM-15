@@ -6,7 +6,6 @@ declare module "next-auth" {
             id?: string;
             username?: string;
         };
-        accessToken?: string;
         oauthScope?: string;
         error?: "INVALID_SESSION";
     }

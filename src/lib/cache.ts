@@ -671,14 +671,16 @@ export async function cacheRepoQueryAnswer(
     query: string,
     files: string[],
     answer: string,
-    policy?: FileCachePolicy
+    policy?: FileCachePolicy,
+    cacheIdentity?: string
 ): Promise<void> {
     // We hash the file list to ensure if files change, cache invalidates.
     // A simple join is sufficient for our keys since they are relative paths.
     const fileHash = files.sort().join('|').substring(0, 100);
     const normalizedQuery = query.toLowerCase().trim();
     const namespace = getQueryCacheNamespace(owner, repo, policy);
-    const key = `answer:${namespace}:${normalizedQuery}:${fileHash}`;
+    const identitySuffix = cacheIdentity ? `:${createHash("sha256").update(cacheIdentity).digest("hex").slice(0, 20)}` : "";
+    const key = `answer:${namespace}:${normalizedQuery}:${fileHash}${identitySuffix}`;
 
     // Cache for 24 hours
     // We compress the answer if it's large as AI responses can be long
@@ -689,14 +691,14 @@ export async function cacheRepoQueryAnswer(
         // Store both the specific (hashed) and latest answer
         await Promise.all([
             safeKvOperation(() => kv.setex(key, 86400, value)),
-            safeKvOperation(() => kv.setex(`latest_answer:${namespace}:${normalizedQuery}`, 86400, value))
+            safeKvOperation(() => kv.setex(`latest_answer:${namespace}:${normalizedQuery}${identitySuffix}`, 86400, value))
         ]);
     } catch {
         console.warn("Failed to compress answer, caching plain text...");
         const stringified = answer;
         await Promise.all([
             safeKvOperation(() => kv.setex(key, 86400, stringified)),
-            safeKvOperation(() => kv.setex(`latest_answer:${namespace}:${normalizedQuery}`, 86400, stringified))
+            safeKvOperation(() => kv.setex(`latest_answer:${namespace}:${normalizedQuery}${identitySuffix}`, 86400, stringified))
         ]);
     }
 }
@@ -706,12 +708,14 @@ export async function getCachedRepoQueryAnswer(
     repo: string,
     query: string,
     files: string[],
-    policy?: FileCachePolicy
+    policy?: FileCachePolicy,
+    cacheIdentity?: string
 ): Promise<string | null> {
     const fileHash = files.sort().join('|').substring(0, 100);
     const normalizedQuery = query.toLowerCase().trim();
     const namespace = getQueryCacheNamespace(owner, repo, policy);
-    const key = `answer:${namespace}:${normalizedQuery}:${fileHash}`;
+    const identitySuffix = cacheIdentity ? `:${createHash("sha256").update(cacheIdentity).digest("hex").slice(0, 20)}` : "";
+    const key = `answer:${namespace}:${normalizedQuery}:${fileHash}${identitySuffix}`;
 
     const cached = await safeKvOperation(() => kv.get<string>(key));
     if (!cached) return null;
@@ -739,11 +743,13 @@ export async function getLatestRepoQueryAnswer(
     owner: string,
     repo: string,
     query: string,
-    policy?: FileCachePolicy
+    policy?: FileCachePolicy,
+    cacheIdentity?: string
 ): Promise<string | null> {
     const normalizedQuery = query.toLowerCase().trim();
     const namespace = getQueryCacheNamespace(owner, repo, policy);
-    const key = `latest_answer:${namespace}:${normalizedQuery}`;
+    const identitySuffix = cacheIdentity ? `:${createHash("sha256").update(cacheIdentity).digest("hex").slice(0, 20)}` : "";
+    const key = `latest_answer:${namespace}:${normalizedQuery}${identitySuffix}`;
 
     const cached = await safeKvOperation(() => kv.get<string>(key));
     if (!cached) return null;

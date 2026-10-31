@@ -27,6 +27,7 @@ import {
     getUserRepos,
     getRepoReadme,
     getRecentProfileCommitsSnapshot,
+    getErrorStatus,
 } from "@/lib/github";
 import {
     ADMIN_ANALYTICS_CACHE_TAGS,
@@ -105,6 +106,16 @@ function getErrorMessage(error: unknown): string {
         return (error as { message: string }).message;
     }
     return String(error);
+}
+
+function getGitHubFetchError(error: unknown, resource: "profile" | "repository"): string {
+    const status = getErrorStatus(error);
+    const message = getErrorMessage(error);
+    if (status === 404) return resource === "repository" ? "Repository not found." : "User not found.";
+    if (status === 403 || status === 429 || /rate limit|quota exhausted|secondary rate/i.test(message)) {
+        return "GitHub rate limit or access restriction. Configure a valid server-side GITHUB_TOKEN with repository read access, then retry.";
+    }
+    return `Could not load ${resource} from GitHub. Check the repository URL and network connection, then retry.`;
 }
 
 function classifyStreamError(error: unknown): { message: string; code?: string } {
@@ -408,7 +419,7 @@ export async function fetchGitHubData(input: string) {
             }
             return { type: "profile", data };
         } catch (e: unknown) {
-            return { error: `User not found: ${getErrorMessage(e)}` };
+            return { error: getGitHubFetchError(e, "profile") };
         }
     }
     if (parts.length === 2) {
@@ -426,7 +437,7 @@ export async function fetchGitHubData(input: string) {
             }
             return { type: "repo", data: repoData, fileTree: tree, hiddenFiles, indexStatus };
         } catch (e: unknown) {
-            return { error: `Repository not found: ${getErrorMessage(e)}` };
+            return { error: getGitHubFetchError(e, "repository") };
         }
     }
     return { error: "Invalid input format" };
