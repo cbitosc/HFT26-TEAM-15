@@ -6,7 +6,7 @@ Collaboration rooms give a small group of signed-in developers a private place t
 
 1. A signed-in user opens `/collaboration`, creates a room name and goal, and may attach an `https://github.com/owner/repo` link.
 2. The creator becomes the room owner. The room page offers **Create / rotate invite**. The owner copies the resulting `/collaboration/join?invite=...` URL and sends it to teammates.
-3. Invitees sign in with GitHub, and the invite route joins them to the room. Existing members can also join by pasting an invite code on the collaboration home page.
+3. Invitees sign in with a configured Google or GitHub provider, and the invite route joins them to the room. Existing members can also join by pasting an invite code on the collaboration home page.
 4. Members see the room goal, member list, shared tasks and room discussion. Task status and messages are shared with all room members. The client polls room state every eight seconds.
 
 Invite codes are generated from cryptographic random bytes. Only a SHA-256 hash is persisted. Rotating an invite replaces the previous hash, invalidating earlier codes. Anyone holding the current invite can join until the eight-member cap is reached, so invite links should be shared only with intended teammates. Only members can read the room API; non-members receive a not-found response. The room owner is the only user who can rotate its invite.
@@ -19,6 +19,7 @@ Invite codes are generated from cryptographic random bytes. Only a SHA-256 hash 
 - `src/app/api/collaboration/rooms/join/route.ts` hashes and validates an invite, then adds the signed-in user if capacity allows.
 - `src/app/api/collaboration/rooms/[roomId]/route.ts` enforces membership for reads, posts and task updates. Reads return up to the latest 100 messages.
 - `src/app/api/collaboration/rooms/[roomId]/invite/route.ts` restricts invite rotation to the owner.
+- `src/components/AuthProviderButtons.tsx` renders only providers exposed by Auth.js, so an unconfigured provider is not offered.
 - `src/lib/collaboration-rooms.ts` contains invite generation/hashing and bounded request validation.
 - `prisma/schema.prisma` adds `CollaborationRoom`, `CollaborationRoomMember`, `CollaborationRoomMessage` and `CollaborationRoomTask`, related to existing `User` records. The forward-only SQLite migration is `prisma/migrations-sqlite/20261031120000_collaboration_rooms/migration.sql`.
 

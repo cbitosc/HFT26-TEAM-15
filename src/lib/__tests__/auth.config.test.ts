@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
-import authConfig from "@/lib/auth.config";
+import authConfig, { getConfiguredOAuthProviders } from "@/lib/auth.config";
 import { INVALID_SESSION_ERROR_CODE } from "@/lib/session-guard";
 
 describe("auth.config callbacks", () => {
     it("routes sign-in and provider errors to the homepage feedback UI", () => {
         expect(authConfig.pages?.signIn).toBe("/");
         expect(authConfig.pages?.error).toBe("/");
+    });
+
+    it("registers only OAuth providers with complete non-placeholder credentials", () => {
+        expect(getConfiguredOAuthProviders({ AUTH_GITHUB_ID: "local-placeholder", AUTH_GITHUB_SECRET: "local-placeholder" } as NodeJS.ProcessEnv)).toHaveLength(0);
+        const providers = getConfiguredOAuthProviders({
+            AUTH_GOOGLE_ID: "google-client-id",
+            AUTH_GOOGLE_SECRET: "google-client-secret",
+            AUTH_GITHUB_ID: "github-client-id",
+        } as NodeJS.ProcessEnv);
+        expect(providers.map((provider) => provider.id)).toEqual(["google"]);
     });
 
     it("uses token.sub as fallback id in jwt callback", async () => {

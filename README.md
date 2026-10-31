@@ -172,7 +172,7 @@ npm run prisma:generate
 npm run dev
 ```
 
-Set `DATABASE_URL="file:./dev.db"` in `.env.local`. `npm run dev` creates the local SQLite file and applies its migrations automatically. GitHub repository analysis needs `GITHUB_TOKEN`; grounded AI chat needs `GEMINI_API_KEY`; GitHub OAuth login needs `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, and `AUTH_SECRET`. Keep every credential server-side. See [repository intelligence setup](docs/repository-intelligence.md) and [deployment notes](docs/deployment.md).
+Set `DATABASE_URL="file:./dev.db"` in `.env.local`. `npm run dev` creates the local SQLite file and applies its migrations automatically. Sign-in supports GitHub (`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET`) and Google (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`); configure at least one provider and `AUTH_SECRET`. GitHub repository analysis needs `GITHUB_TOKEN`; grounded AI chat needs `GEMINI_API_KEY`. Google sign-in does not grant access to private GitHub repositories. Keep credentials server-side. See [repository intelligence setup](docs/repository-intelligence.md) and [deployment notes](docs/deployment.md).
 
 Open [http://localhost:3000](http://localhost:3000). The existing application has additional integrations (KV, Blob, Resend) for their respective features; see `.env.example` for their settings.
 

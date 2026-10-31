@@ -8,7 +8,7 @@ describe("getAuthErrorMessage", () => {
     });
 
     it("returns a safe fallback for unknown errors and null for no error", () => {
-        expect(getAuthErrorMessage("internal-stack-trace")).toBe("GitHub sign-in failed. Please try again.");
+        expect(getAuthErrorMessage("internal-stack-trace")).toBe("Sign-in failed. Please try again.");
         expect(getAuthErrorMessage(null)).toBeNull();
     });
 });

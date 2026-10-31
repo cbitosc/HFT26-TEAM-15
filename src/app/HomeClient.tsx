@@ -156,7 +156,7 @@ export default function HomeClient({
                     )}
                     {authErrorMessage && !hasInvalidSessionError && (
                         <div role="alert" className="w-full max-w-md mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-left text-sm text-red-100">
-                            <p className="font-medium">GitHub sign-in failed</p>
+                            <p className="font-medium">Sign-in failed</p>
                             <p className="mt-1">{authErrorMessage}</p>
                         </div>
                     )}

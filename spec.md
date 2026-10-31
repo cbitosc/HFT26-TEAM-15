@@ -65,7 +65,7 @@ The actual checked out product is a Next.js application. Reinspect the affected 
 
 ### Authentication, graphs and existing security
 
-- GitHub OAuth is configured through NextAuth in `src/lib/auth.config.ts` and `src/lib/auth.ts`; Prisma is the adapter and sessions use JWT strategy. `src/lib/session-guard.ts`, `src/lib/actor-id.ts` and route/action-specific checks support auth state and anonymous actors. The session callback does not serialize the OAuth access token; routes retrieve a user's GitHub credential from the server-side Prisma `Account` record.
+- GitHub and Google OAuth are conditionally configured through NextAuth in `src/lib/auth.config.ts` and `src/lib/auth.ts`; Prisma is the adapter and sessions use JWT strategy. A user's GitHub credential is read server-side from the Prisma `Account` record; Google sign-in alone does not authorize private GitHub access. `src/lib/session-guard.ts`, `src/lib/actor-id.ts` and route/action-specific checks support auth state and anonymous actors. OAuth access tokens are not serialized to browser sessions.
 - Existing diagrams are Mermaid rendered by `src/components/Mermaid.tsx` and helpers in `src/lib/diagram-utils.ts`; chat prompts can ask Gemini to generate architecture/flow diagrams. The Repository Intelligence workspace adds a separate typed, bounded import graph derived from source evidence.
 - Existing security work includes deterministic code/secret/config rules, npm dependency checks, optional Gemini validation, OSV lookup, verification gates, persistence, scan history, share links and reports. Preserve its API/UX contracts while extending it.
 

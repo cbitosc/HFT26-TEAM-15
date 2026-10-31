@@ -1,14 +1,26 @@
 import type { NextAuthConfig } from "next-auth";
 import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import { INVALID_SESSION_ERROR_CODE } from "./session-guard";
 
+function hasOAuthCredentials(value: string | undefined): value is string {
+    const credential = value?.trim();
+    return Boolean(credential && !/^(local-placeholder|your_|placeholder|example)/i.test(credential));
+}
+
+export function getConfiguredOAuthProviders(env: NodeJS.ProcessEnv = process.env): NextAuthConfig["providers"] {
+    const providers: NextAuthConfig["providers"] = [];
+    if (hasOAuthCredentials(env.AUTH_GITHUB_ID) && hasOAuthCredentials(env.AUTH_GITHUB_SECRET)) {
+        providers.push(GitHub({ clientId: env.AUTH_GITHUB_ID, clientSecret: env.AUTH_GITHUB_SECRET }));
+    }
+    if (hasOAuthCredentials(env.AUTH_GOOGLE_ID) && hasOAuthCredentials(env.AUTH_GOOGLE_SECRET)) {
+        providers.push(Google({ clientId: env.AUTH_GOOGLE_ID, clientSecret: env.AUTH_GOOGLE_SECRET }));
+    }
+    return providers;
+}
+
 const authConfig: NextAuthConfig = {
-    providers: [
-        GitHub({
-            clientId: process.env.AUTH_GITHUB_ID,
-            clientSecret: process.env.AUTH_GITHUB_SECRET,
-        }),
-    ],
+    providers: getConfiguredOAuthProviders(),
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;

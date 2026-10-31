@@ -4,13 +4,19 @@
 **Current database:** SQLite through Prisma (`DATABASE_URL=file:./dev.db`, stored in `prisma/dev.db`).
 **Overall status:** Local app starts and serves pages. The five-phase feature work remains as described below; external service and production verification are incomplete.
 
+## Latest user request: add Google OAuth
+
+Added Google as an optional NextAuth provider while retaining GitHub. `src/lib/auth.config.ts` now registers only providers with a complete non-placeholder credential pair. `src/components/AuthProviderButtons.tsx` reads Auth.js's configured provider list and displays Google/GitHub choices in the homepage and collaboration invite flow. `.env.example`, README, deployment docs and spec now document `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, and the callback URL. Google accounts can authenticate to RepoMind but do not grant private GitHub access; that still requires an authorized GitHub account.
+
+Auth provider configuration tests, UI checks and end-to-end provider authorization remain pending for this request. Google OAuth cannot complete until a Google OAuth client is created and its credentials are added to the user's ignored `.env.local`.
+
 ## Latest user request: GitHub OAuth error
 
 Fixed the app's missing OAuth error feedback. Auth.js redirects provider failures to the configured sign-in page (`/`) with an error code, but the homepage previously only displayed `invalid_session`; other OAuth failures looked like a silent return. `src/lib/auth-errors.ts` maps known Auth.js errors to safe user-facing explanations, and `src/app/HomeClient.tsx` displays them in an alert. `docs/deployment.md` now gives local and production GitHub callback URL setup. Tests in `src/lib/__tests__/auth-errors.test.ts` passed (2 tests); targeted ESLint and `git diff --check` passed.
 
 Follow-up from the user's error screenshot: configured `pages.error: "/"` in `src/lib/auth.config.ts` so Auth.js no longer leaves failures on its generic `/api/auth/error` page; the homepage can now show its error-specific guidance. Auth config/error tests passed (5 total), targeted ESLint passed, and `git diff --check` passed.
 
-**Configuration dependency:** The local GitHub OAuth Client ID and Client Secret are present but the Client Secret is only 17 characters, so this checkout's OAuth credentials may be invalid or incomplete. I did not alter or expose the secret. The GitHub OAuth app must have the matching callback URL (`http://localhost:3000/api/auth/callback/github` for local development); code cannot repair a mismatched GitHub app registration or replace missing credentials. End-to-end OAuth sign-in remains unverified until valid credentials and callback settings are supplied.
+**Configuration dependency:** The latest local `.env.local` check found `AUTH_GITHUB_ID` missing. A GitHub Client Secret value exists but cannot be used alone. The GitHub OAuth app must have the matching callback URL (`http://localhost:3000/api/auth/callback/github` for local development); code cannot repair a mismatched GitHub app registration or supply missing credentials. End-to-end OAuth sign-in remains unverified until valid credentials and callback settings are supplied.
 
 ## Latest user request: isolated developer collaboration rooms
 
