@@ -3,6 +3,11 @@ import authConfig from "@/lib/auth.config";
 import { INVALID_SESSION_ERROR_CODE } from "@/lib/session-guard";
 
 describe("auth.config callbacks", () => {
+    it("routes sign-in and provider errors to the homepage feedback UI", () => {
+        expect(authConfig.pages?.signIn).toBe("/");
+        expect(authConfig.pages?.error).toBe("/");
+    });
+
     it("uses token.sub as fallback id in jwt callback", async () => {
         const jwt = authConfig.callbacks?.jwt;
         expect(jwt).toBeTypeOf("function");

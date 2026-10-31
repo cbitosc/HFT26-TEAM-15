@@ -8,6 +8,8 @@
 
 Fixed the app's missing OAuth error feedback. Auth.js redirects provider failures to the configured sign-in page (`/`) with an error code, but the homepage previously only displayed `invalid_session`; other OAuth failures looked like a silent return. `src/lib/auth-errors.ts` maps known Auth.js errors to safe user-facing explanations, and `src/app/HomeClient.tsx` displays them in an alert. `docs/deployment.md` now gives local and production GitHub callback URL setup. Tests in `src/lib/__tests__/auth-errors.test.ts` passed (2 tests); targeted ESLint and `git diff --check` passed.
 
+Follow-up from the user's error screenshot: configured `pages.error: "/"` in `src/lib/auth.config.ts` so Auth.js no longer leaves failures on its generic `/api/auth/error` page; the homepage can now show its error-specific guidance. Auth config/error tests passed (5 total), targeted ESLint passed, and `git diff --check` passed.
+
 **Configuration dependency:** The local GitHub OAuth Client ID and Client Secret are present but the Client Secret is only 17 characters, so this checkout's OAuth credentials may be invalid or incomplete. I did not alter or expose the secret. The GitHub OAuth app must have the matching callback URL (`http://localhost:3000/api/auth/callback/github` for local development); code cannot repair a mismatched GitHub app registration or replace missing credentials. End-to-end OAuth sign-in remains unverified until valid credentials and callback settings are supplied.
 
 ## Latest user request: isolated developer collaboration rooms
