@@ -24,6 +24,7 @@ import MediaShowcase from "@/components/MediaShowcase";
 import JsonLdScript from "@/components/JsonLdScript";
 import type { SearchHistoryItem } from "@/lib/services/history-service";
 import { INVALID_SESSION_ERROR_PARAM } from "@/lib/session-guard";
+import { getAuthErrorMessage } from "@/lib/auth-errors";
 import { BlogPost } from "@prisma/client";
 import { CatalogRepoEntry } from "@/lib/repo-catalog";
 import { FAQ_PAGE_ITEMS } from "@/lib/faq-data";
@@ -57,6 +58,7 @@ export default function HomeClient({
     const [recentSearches, setRecentSearches] = useState<SearchHistoryItem[]>([]);
     const [visibleReposCount, setVisibleReposCount] = useState(6);
     const hasInvalidSessionError = searchParams.get("error") === INVALID_SESSION_ERROR_PARAM;
+    const authErrorMessage = getAuthErrorMessage(searchParams.get("error"));
 
     const [trendingTier, setTrendingTier] = useState<"weekly" | "monthly">("weekly");
     const trendingRepos = trendingTier === "weekly" ? weeklyTrending : monthlyTrending;
@@ -150,6 +152,12 @@ export default function HomeClient({
                     {hasInvalidSessionError && (
                         <div className="w-full max-w-md mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm text-amber-100">
                             Your session could not be validated. Please sign in again.
+                        </div>
+                    )}
+                    {authErrorMessage && !hasInvalidSessionError && (
+                        <div role="alert" className="w-full max-w-md mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-left text-sm text-red-100">
+                            <p className="font-medium">GitHub sign-in failed</p>
+                            <p className="mt-1">{authErrorMessage}</p>
                         </div>
                     )}
 

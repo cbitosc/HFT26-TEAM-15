@@ -9,6 +9,8 @@ RepoMind currently uses Next.js App Router, Prisma, and SQLite. SQLite stores da
 3. Add real GitHub OAuth and Gemini credentials for those features. Public static pages can run without them; repository analysis, login and AI chat need the corresponding credentials.
 4. Run `npm ci` and `npm run dev`. The dev command creates the SQLite file and applies active migrations.
 
+For local GitHub OAuth, set the GitHub OAuth app's callback URL to `http://localhost:3000/api/auth/callback/github`. For a deployed app, register its public origin with the callback path `/api/auth/callback/github` and use that app's Client ID and Client Secret in the server environment. The homepage displays a safe explanation for Auth.js sign-in error codes; detailed causes remain in the server logs and must not be shown to browsers.
+
 ## Self-hosted deployment requirements
 
 - A persistent, writable volume mounted at the path containing the SQLite database.
