@@ -101,6 +101,7 @@ type SeoMetadataInput = {
     twitterDescription?: string;
     twitterCreator?: string;
     twitterSite?: string;
+    siteName?: string;
     robots?: Metadata["robots"];
     noIndex?: boolean;
 };
@@ -140,7 +141,7 @@ export function createSeoMetadata(input: SeoMetadataInput): Metadata {
             title: ogTitle,
             description: ogDescription,
             url: input.canonical,
-            siteName: BRAND_NAME,
+            siteName: input.siteName ?? BRAND_NAME,
             type: input.ogType ?? "website",
             locale: "en_US",
             images: [toMetadataImage(ogImage, ogTitle)],

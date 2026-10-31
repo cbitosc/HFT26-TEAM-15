@@ -1,4 +1,4 @@
-export const REPO_INTELLIGENCE_VERSION = "1.4.0";
+export const REPO_INTELLIGENCE_VERSION = "1.5.0";
 
 export type EvidenceStrength = "high" | "medium" | "low";
 export type EvidenceKind = "import" | "route" | "symbol" | "manifest" | "entry-point" | "configuration";
@@ -42,6 +42,12 @@ export interface SourceRoute {
     line?: number;
 }
 
+export interface EntryPointEvidence {
+    kind: "route" | "runtime" | "command";
+    line?: number;
+    description: string;
+}
+
 export type ArchitectureLayer = "application" | "api" | "presentation" | "services" | "domain" | "data" | "configuration" | "tests" | "infrastructure" | "other";
 
 export interface IntelligenceFile {
@@ -54,6 +60,7 @@ export interface IntelligenceFile {
     category: "source" | "configuration" | "manifest" | "documentation";
     analysisState: "analyzed" | "parse-warning";
     entryPoint: boolean;
+    entryPointEvidence?: EntryPointEvidence[];
     imports: SourceImport[];
     symbols: SourceSymbol[];
     calls: SourceCall[];

@@ -4,6 +4,12 @@
 **Current database:** SQLite through Prisma (`DATABASE_URL=file:./dev.db`, stored in `prisma/dev.db`).
 **Overall status:** Local app starts and serves pages. The five-phase feature work remains as described below; external service and production verification are incomplete.
 
+## Latest user request: data-flow visualization and entry-point detection
+
+Extended the deterministic analyzer to retain line-backed entry-point evidence for Next.js App Router and Pages Router routes, Python executable guards/common runtime modules, Go/Rust/main-method declarations, and conventional JavaScript/TypeScript startup modules or executable guards. The repository intelligence architecture graph now lists detected entry points and opens their source evidence. Its new data-flow mode lays out statically resolved call paths reachable from those entry points. This is execution/call flow, not variable-level lineage or observed runtime flow. ZIP and GitHub source explorers use the same graph component. Analyzer version is 1.5.0 so older snapshots are not treated as having the new metadata. Updated repository intelligence docs and roadmap task status.
+
+Verification: targeted ESLint passed; `git diff --check` passed. `npx tsc --noEmit` still fails on pre-existing errors in metadata assertions and unrelated auth/utility tests; it reported no errors in the changed analyzer, graph, or UI files. Automated tests were not run. A Next dev server is currently listening on port 3000, so a production build was not run to avoid interfering with its `.next` output. Production, live GitHub and ZIP browser verification have not been performed for this change.
+
 ## Latest user request: add Google OAuth
 
 Added Google as an optional NextAuth provider while retaining GitHub. `src/lib/auth.config.ts` now registers only providers with a complete non-placeholder credential pair. `src/components/AuthProviderButtons.tsx` reads Auth.js's configured provider list and displays Google/GitHub choices in the homepage and collaboration invite flow. `.env.example`, README, deployment docs and spec now document `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`, and the callback URL. Google accounts can authenticate to RepoMind but do not grant private GitHub access; that still requires an authorized GitHub account.

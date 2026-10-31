@@ -41,7 +41,7 @@ function isValidOwnerRepo(owner: string, repo: string): boolean {
 
 function buildRepoSignInHref(owner: string, repo: string): string {
     const callbackUrl = encodeURIComponent(`/repo/${owner}/${repo}`);
-    return `/api/auth/signin?callbackUrl=${callbackUrl}`;
+    return `/api/auth/signin/github?callbackUrl=${callbackUrl}`;
 }
 
 function RepoUnavailableState({ owner, repo }: { owner: string; repo: string }) {
@@ -66,7 +66,7 @@ function RepoUnavailableState({ owner, repo }: { owner: string; repo: string }) 
                     </p>
                     <p className="text-zinc-400 leading-relaxed mb-8">
                         The repository may not exist, may be private, or the owner/repository name may be typed incorrectly.
-                        Double-check the owner and repository name. To view private repositories, sign in with GitHub first.
+                        Double-check the owner and repository name. To view a private repository, connect a GitHub account that can access it. Google sign-in alone does not grant private GitHub access.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-3">
@@ -75,7 +75,7 @@ function RepoUnavailableState({ owner, repo }: { owner: string; repo: string }) 
                             className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white text-black hover:bg-zinc-200 transition-colors font-medium"
                         >
                             <Lock className="w-4 h-4" />
-                            Sign in with GitHub
+                            Connect GitHub account
                         </Link>
                         <Link
                             href="/"

@@ -173,6 +173,7 @@ Run tests, lint/type checks, and production build. Test at least one small repos
 8. Allow navigation from a graph node to the relevant source file and line when available.
 9. Provide sensible handling for monorepos, cycles, unresolved imports, and large graphs.
 10. Add graph loading, empty, partial, and error states.
+11. Detect entry points from supported route/runtime evidence with source locations, and offer a bounded call-flow view reachable from those points. Label this as static call flow; do not present it as variable-level lineage or observed runtime data flow.
 
 ### Acceptance criteria
 
@@ -182,6 +183,7 @@ Run tests, lint/type checks, and production build. Test at least one small repos
 - Cycles and unresolved imports do not crash rendering.
 - Large graphs remain usable through filtering, grouping, or bounded rendering.
 - Graph results clearly indicate when the underlying repository analysis is partial.
+- Detected entry points expose their evidence location; call-flow edges are statically resolved and are not described as variable-level data lineage.
 
 ### Verification
 

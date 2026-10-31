@@ -254,7 +254,7 @@ export default function InteractiveDemo() {
                     </button>
                 </div>
                 <p className="text-zinc-400 text-lg md:text-xl">
-                    Whether chatting, visualizing, or auditing, RepoMind handles it all.
+                    Whether chatting, visualizing, or auditing, CodeCompass handles it all.
                 </p>
             </div>
 
@@ -322,7 +322,7 @@ export default function InteractiveDemo() {
                                 className="flex gap-4 items-start w-full"
                             >
                                 <div className="p-1 bg-zinc-900 rounded-lg shrink-0 border border-zinc-700 shadow-[0_0_15px_rgba(255,255,255,0.05)] overflow-hidden flex items-center justify-center w-10 h-10">
-                                    <Image src="/1080x1080.png" alt="RepoMind" width={32} height={32} className="w-8 h-8 rounded-md object-cover" />
+                                    <Image src="/1080x1080.png" alt="CodeCompass" width={32} height={32} className="w-8 h-8 rounded-md object-cover" />
                                 </div>
 
                                 <div className="flex-1 space-y-4">

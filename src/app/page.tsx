@@ -12,7 +12,7 @@ const HOMEPAGE_TRENDING_REPO_LIMIT = 60;
 export const metadata: Metadata = createSeoMetadata({
     title: "GitHub Repository Analysis, Code Review & Security Scanning",
     description:
-        "Analyze GitHub repositories and developer profiles with Agentic AI. Use RepoMind for architecture visualization, AI code review, and repository security scanning.",
+        "Analyze GitHub repositories and developer profiles with Agentic AI. Use CodeCompass for architecture visualization, AI code review, and repository security scanning.",
     keywords: [
         "github repository analysis",
         "ai code review tool",
@@ -22,7 +22,8 @@ export const metadata: Metadata = createSeoMetadata({
     ],
     canonical: "/",
     ogImage: buildOgImageUrl("marketing", { variant: "home" }),
-    ogTitle: "GitHub Repository Analysis, Code Review & Security Scanning | RepoMind",
+    ogTitle: "GitHub Repository Analysis, Code Review & Security Scanning | CodeCompass",
+    siteName: "CodeCompass",
     ogDescription: "Understand architecture, review code with context, and prioritize repository security risks faster.",
 });
 

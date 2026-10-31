@@ -4,7 +4,7 @@ import { Fragment, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Check, X, Brain, Database } from "lucide-react";
 
-export default function CAGComparison() {
+export default function CAGComparison({ brandName = "RepoMind" }: { brandName?: string }) {
     const ragChunks = useMemo(
         () =>
             Array.from({ length: 6 }, (_, i) => {
@@ -33,7 +33,7 @@ export default function CAGComparison() {
                         Agentic CAG vs. Traditional RAG
                     </h2>
                     <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-                        RepoMind uses <strong>Agentic Context Augmented Generation (Agentic CAG)</strong>. We don&apos;t just retrieve fragments; we understand the whole picture.
+                        {brandName} uses <strong>Agentic Context Augmented Generation (Agentic CAG)</strong>. We don&apos;t just retrieve fragments; we understand the whole picture.
                     </p>
                 </motion.div>
 
@@ -113,7 +113,7 @@ export default function CAGComparison() {
                         </div>
                     </div>
 
-                    {/* RepoMind Agentic CAG Card */}
+                    {/* Product Agentic CAG Card */}
                     <div className="bg-gradient-to-b from-blue-900/20 to-purple-900/20 border border-blue-500/30 rounded-2xl p-8 backdrop-blur-sm relative overflow-hidden hover:border-blue-500/50 transition-colors cursor-default flex flex-col shadow-[0_0_30px_rgba(59,130,246,0.1)]">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[50px] rounded-full" />
 
@@ -121,7 +121,7 @@ export default function CAGComparison() {
                             <div className="p-3 bg-blue-500/20 rounded-lg">
                                 <Brain className="w-6 h-6 text-blue-400" />
                             </div>
-                            <h3 className="text-2xl font-semibold text-white">RepoMind (Agentic CAG)</h3>
+                            <h3 className="text-2xl font-semibold text-white">{brandName} (Agentic CAG)</h3>
                         </div>
 
                         {/* Agentic CAG Animation Canvas */}

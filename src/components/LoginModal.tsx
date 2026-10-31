@@ -1,7 +1,7 @@
 "use client";
 
-import { X, Github, ShieldAlert } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { X, ShieldAlert } from "lucide-react";
+import { AuthProviderButtons } from "@/components/AuthProviderButtons";
 
 interface LoginModalProps {
     isOpen: boolean;
@@ -9,16 +9,14 @@ interface LoginModalProps {
     title?: string;
     description?: string;
     callbackUrl?: string;
-    scope?: string;
 }
 
 export function LoginModal({
     isOpen,
     onClose,
     title = "Authentication Required",
-    description = "Please sign in with GitHub to access Premium features like Thinking Mode and Deep Security Scans.",
+    description = "Please sign in with Google to access Premium features like Thinking Mode and Deep Security Scans.",
     callbackUrl,
-    scope,
 }: LoginModalProps) {
     if (!isOpen) return null;
 
@@ -43,19 +41,9 @@ export function LoginModal({
                         {description}
                     </p>
 
-                    <button
-                        onClick={() =>
-                            signIn(
-                                "github",
-                                callbackUrl ? { callbackUrl } : undefined,
-                                scope ? { scope } : undefined
-                            )
-                        }
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white text-black font-semibold hover:bg-zinc-200 transition-all shadow-lg"
-                    >
-                        <Github className="w-5 h-5" />
-                        <span>Sign in with GitHub</span>
-                    </button>
+                    <div className="flex justify-center">
+                        <AuthProviderButtons callbackUrl={callbackUrl} />
+                    </div>
                 </div>
             </div>
         </div>

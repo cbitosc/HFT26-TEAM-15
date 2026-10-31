@@ -1,4 +1,4 @@
-import type { IntelligenceFile, SourceSymbol } from "./types";
+import type { EntryPointEvidence, IntelligenceFile, SourceSymbol } from "./types";
 import { resolveSourceImport } from "./graph";
 
 export type ArchitectureNodeKind = "file" | "function" | "class";
@@ -11,6 +11,8 @@ export interface ArchitectureNode {
     label: string;
     line?: number;
     exported?: boolean;
+    entryPoint?: boolean;
+    entryPointEvidence?: EntryPointEvidence[];
 }
 
 export interface ArchitectureEdge {
@@ -45,7 +47,7 @@ export function buildArchitectureGraph(files: IntelligenceFile[], options: { max
     for (const file of files) {
         if (nodes.length >= maxNodes) { truncated = true; break; }
         const id = fileId(file.path);
-        nodes.push({ id, kind: "file", path: file.path, label: basename(file.path) });
+        nodes.push({ id, kind: "file", path: file.path, label: basename(file.path), entryPoint: file.entryPoint, entryPointEvidence: file.entryPointEvidence });
         fileNodes.set(file.path, id);
     }
 

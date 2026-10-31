@@ -5,6 +5,7 @@ import type {
     ImplementedFeature,
     IntelligenceEvidence,
     IntelligenceFile,
+    EntryPointEvidence,
     SourceFileInput,
     SourceCall,
     SourceImport,
@@ -67,10 +68,12 @@ function lineOf(node: Node): number | undefined {
 function appRouteForPath(path: string): SourceRoute[] {
     const normalized = path.replace(/\\/g, "/");
     const routeIndex = normalized.indexOf("src/app/");
+    const pagesIndex = normalized.indexOf("src/pages/");
     const appRelative = routeIndex >= 0 ? normalized.slice(routeIndex + "src/app/".length) : normalized.startsWith("app/") ? normalized.slice(4) : null;
-    if (appRelative === null) return [];
+    const pagesRelative = pagesIndex >= 0 ? normalized.slice(pagesIndex + "src/pages/".length) : normalized.startsWith("pages/") ? normalized.slice(6) : null;
+    if (appRelative === null && pagesRelative === null) return [];
 
-    if (/(^|\/)route\.(ts|tsx|js|jsx)$/.test(appRelative)) {
+    if (appRelative && /(^|\/)route\.(ts|tsx|js|jsx)$/.test(appRelative)) {
         const routePath = appRelative.replace(/(^|\/)route\.(ts|tsx|js|jsx)$/, "").split("/")
             .filter((segment) => !/^\(.+\)$/.test(segment))
             .map((segment) => segment.startsWith("[") && segment.endsWith("]") ? `:${segment.slice(1, -1)}` : segment)
@@ -78,20 +81,57 @@ function appRouteForPath(path: string): SourceRoute[] {
         return [{ path: `/${routePath}`, kind: "route-handler", methods: [], line: 1 }];
     }
 
-    const match = appRelative.match(/(^|\/)(page|layout)\.(tsx?|jsx?)$/);
-    if (!match) return [];
-    const routePath = appRelative.replace(/(^|\/)(page|layout)\.(tsx?|jsx?)$/, "").split("/")
-        .filter((segment) => !/^\(.+\)$/.test(segment))
-        .map((segment) => segment.startsWith("[") && segment.endsWith("]") ? `:${segment.slice(1, -1)}` : segment)
-        .filter(Boolean).join("/");
-    return [{ path: `/${routePath}`, kind: match[2] === "page" ? "page" : "layout", methods: [], line: 1 }];
+    if (appRelative) {
+        const match = appRelative.match(/(^|\/)(page|layout)\.(tsx?|jsx?)$/);
+        if (!match) return [];
+        const routePath = appRelative.replace(/(^|\/)(page|layout)\.(tsx?|jsx?)$/, "").split("/")
+            .filter((segment) => !/^\(.+\)$/.test(segment))
+            .map((segment) => segment.startsWith("[") && segment.endsWith("]") ? `:${segment.slice(1, -1)}` : segment)
+            .filter(Boolean).join("/");
+        return [{ path: `/${routePath}`, kind: match[2] === "page" ? "page" : "layout", methods: [], line: 1 }];
+    }
+
+    const pagesFile = pagesRelative!.replace(/\.(tsx?|jsx?)$/, "");
+    if (/(^|\/)_((app|document|error))$/.test(pagesFile)) return [];
+    const isApiRoute = pagesFile === "api" || pagesFile.startsWith("api/");
+    const routeSegments = pagesFile.split("/").filter((segment) => segment !== "index");
+    const routePath = routeSegments
+        .map((segment) => segment.startsWith("[...") && segment.endsWith("]") ? `*${segment.slice(4, -1)}` : segment.startsWith("[") && segment.endsWith("]") ? `:${segment.slice(1, -1)}` : segment)
+        .join("/");
+    return [{ path: `/${routePath}`, kind: isApiRoute ? "route-handler" : "page", methods: [], line: 1 }];
 }
 
-function isEntryPoint(path: string, routes: SourceRoute[]): boolean {
+function detectEntryPointEvidence(path: string, routes: SourceRoute[], content: string, language: string): EntryPointEvidence[] {
     const normalized = path.replace(/\\/g, "/").toLowerCase();
     const base = fileName(path);
-    return routes.some((route) => route.kind !== "layout") || /(^|\/)(index|main|app|server)\.(ts|tsx|js|jsx|py|go|rs)$/.test(normalized) ||
-        ["main.py", "manage.py", "wsgi.py", "asgi.py"].includes(base);
+    const evidence: EntryPointEvidence[] = routes
+        .filter((route) => route.kind !== "layout")
+        .map((route) => ({ kind: "route", line: route.line, description: `${route.kind === "page" ? "Page" : "API handler"} route ${route.path}.` }));
+    const addLineEvidence = (kind: EntryPointEvidence["kind"], pattern: RegExp, description: string) => {
+        const lineIndex = content.split(/\r?\n/).findIndex((line) => pattern.test(line));
+        if (lineIndex >= 0) evidence.push({ kind, line: lineIndex + 1, description });
+    };
+
+    if (language === "Python") {
+        addLineEvidence("runtime", /^\s*if\s+__name__\s*==\s*["']__main__["']\s*:/, "Python module has an executable __main__ guard.");
+        if (evidence.length === 0 && ["main.py", "manage.py", "wsgi.py", "asgi.py"].includes(base)) {
+            evidence.push({ kind: "runtime", line: 1, description: `Conventional Python runtime module ${base}.` });
+        }
+    } else if (language === "Go") {
+        if (/^\s*package\s+main\s*$/m.test(content)) addLineEvidence("runtime", /^\s*func\s+main\s*\(/, "Go executable package declares func main.");
+    } else if (language === "Rust") {
+        addLineEvidence("runtime", /^\s*(?:#\[[^\]]+\]\s*)*fn\s+main\s*\(/, "Rust executable module declares fn main.");
+    } else if (["Java", "Kotlin", "C#", "C", "C++"].includes(language)) {
+        addLineEvidence("runtime", /\b(?:public\s+static\s+void\s+main|static\s+void\s+main|fun\s+main\s*\(|int\s+main\s*\()/, `${language} source declares a conventional main method.`);
+    } else if (language === "TypeScript" || language === "JavaScript") {
+        if (/(^|\/)(main|server|cli)\.(?:tsx?|jsx?|mjs|cjs)$/.test(normalized) || (!normalized.includes("/") && /^index\.(?:tsx?|jsx?|mjs|cjs)$/.test(base))) {
+            evidence.push({ kind: base.startsWith("cli.") ? "command" : "runtime", line: 1, description: `Conventional ${base} application entry module.` });
+        }
+        addLineEvidence("runtime", /^\s*if\s*\(\s*require\.main\s*===\s*module\s*\)/, "Node.js module has an executable require.main guard.");
+        addLineEvidence("runtime", /^\s*if\s*\(\s*import\.meta\.main\s*\)/, "ES module has an executable import.meta.main guard.");
+    }
+
+    return evidence.filter((item, index, items) => items.findIndex((candidate) => candidate.kind === item.kind && candidate.line === item.line && candidate.description === item.description) === index);
 }
 
 function importedPackageKind(source: string): SourceImport["kind"] {
@@ -322,6 +362,7 @@ function analyzeSourceFile(file: SourceFileInput): IntelligenceFile | null {
     }
 
     const filePath = file.path.replace(/\\/g, "/");
+    const entryPointEvidence = category === "source" ? detectEntryPointEvidence(filePath, routes, file.content, language) : [];
     return {
         path: filePath,
         blobSha: file.sha,
@@ -331,7 +372,8 @@ function analyzeSourceFile(file: SourceFileInput): IntelligenceFile | null {
         layer: architectureLayer(filePath),
         category,
         analysisState: warnings.length > 0 ? "parse-warning" : "analyzed",
-        entryPoint: isEntryPoint(filePath, routes),
+        entryPoint: entryPointEvidence.length > 0,
+        entryPointEvidence,
         imports,
         symbols,
         calls,

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown, Star, GitFork, MessageSquare, Globe, TrendingUp } from "lucide-react";
+import { ArrowRight, ChevronDown, Star, GitFork, MessageSquare, Globe, TrendingUp, Compass } from "lucide-react";
 import { getRecentSearches } from "./actions";
 import TrustedByMarquee from "@/components/TrustedByMarquee";
 import InteractiveDemo from "@/components/InteractiveDemo";
@@ -65,9 +65,9 @@ export default function HomeClient({
     const visibleRepos = trendingRepos.slice(0, visibleReposCount);
     const hasMoreRepos = visibleReposCount < trendingRepos.length;
     const softwareSchema = buildSoftwareApplicationStructuredData({
-        name: "RepoMind",
+        name: "CodeCompass",
         description:
-            "RepoMind helps developers analyze GitHub repositories for architecture understanding, AI code review, and security scanning.",
+            "CodeCompass helps developers analyze GitHub repositories for architecture understanding, AI code review, and security scanning.",
         path: "/",
         featureList: [
             "GitHub repository analysis",
@@ -121,26 +121,20 @@ export default function HomeClient({
                 >
                     <div className="w-full flex flex-col items-center gap-3 md:gap-4">
                         <div className="conic-border-container neon-spin-ring rounded-full w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
-                            <Image
-                                src="/1080x1080.png"
-                                alt="RepoMind Logo"
-                                width={96}
-                                height={96}
-                                className="w-full h-full object-cover rounded-full"
-                            />
+                            <Compass aria-label="CodeCompass compass mark" className="h-9 w-9 md:h-11 md:w-11 text-cyan-300" strokeWidth={1.7} />
                         </div>
                         <div className="inline-flex items-center justify-center gap-2 md:gap-3 w-full">
                             <p className="whitespace-nowrap text-[10px] md:text-xs font-semibold tracking-[0.35em] uppercase text-zinc-500 leading-none">
-                                RepoMind
+                                CodeCompass
                             </p>
                             <WhatsNewBadge />
                         </div>
                     </div>
 
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70 relative">
-                        GitHub Repository Analysis,
+                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-3 text-white relative">
+                        <span className="block">GitHub Repository Analysis,</span>
                         <br />
-                        Code Review & Security Scanning
+                        <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent drop-shadow-[0_0_22px_rgba(59,130,246,0.3)]">Code Review &amp; Security Scanning</span>
                     </h1>
 
                     <CAGBadge />
@@ -198,7 +192,7 @@ export default function HomeClient({
                         <div>
                             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5">Use Cases That Drive Decisions</h2>
                             <p className="text-zinc-400 text-lg mb-8">
-                                RepoMind helps teams reduce uncertainty before adoption, release, and remediation decisions.
+                                CodeCompass helps teams reduce uncertainty before adoption, release, and remediation decisions.
                             </p>
                             <div className="space-y-4">
                                 <article className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5 group hover:border-zinc-700 transition-colors">
@@ -231,7 +225,7 @@ export default function HomeClient({
             <section className="relative z-10 w-full bg-black py-24 px-6 border-t border-white/5">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">How RepoMind Works</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">How CodeCompass Works</h2>
                         <p className="text-zinc-400 text-lg max-w-3xl mx-auto">
                             Intent-first workflows for repository analysis, architecture clarity, code review, and security prioritization.
                         </p>
@@ -260,7 +254,7 @@ export default function HomeClient({
             <MediaShowcase />
 
             <div className="relative z-10 w-full bg-zinc-950">
-                <CAGComparison />
+                <CAGComparison brandName="CodeCompass" />
             </div>
 
 
@@ -320,7 +314,7 @@ export default function HomeClient({
                                 Explore Trending <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Repositories</span>
                             </h2>
                             <p className="text-zinc-400 text-lg max-w-2xl mx-auto mb-8">
-                                Explore the projects getting the most heat on GitHub. Instantly analyze any of them with RepoMind.
+                                Explore the projects getting the most heat on GitHub. Instantly analyze any of them with CodeCompass.
                             </p>
 
                             <div className="flex justify-center p-1 bg-zinc-900 border border-white/5 rounded-xl w-fit mx-auto">
@@ -390,7 +384,7 @@ export default function HomeClient({
                                         </div>
                                         <Link 
                                             href={`/chat?q=${repo.owner}/${repo.repo}`}
-                                            aria-label={`Analyze ${repo.owner}/${repo.repo} with RepoMind`}
+                                            aria-label={`Analyze ${repo.owner}/${repo.repo} with CodeCompass`}
                                             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white text-black text-xs font-bold hover:bg-zinc-200 transition-colors"
                                         >
                                             <MessageSquare size={12} />
@@ -493,7 +487,7 @@ export default function HomeClient({
                 </section>
             )}
 
-            <Footer />
+            <Footer brandName="CodeCompass" />
             <JsonLdScript data={softwareSchema} />
             <JsonLdScript data={faqSchema} />
             <InstallPWA />

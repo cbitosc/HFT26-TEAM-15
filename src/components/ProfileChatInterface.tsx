@@ -677,7 +677,7 @@ export function ProfileChatInterface({
                 });
                 setLoginModalCopy({
                     title: "Sign In Required",
-                    description: "Please sign in with GitHub to continue profile analysis features.",
+                    description: "Please sign in with Google to continue profile analysis features.",
                 });
                 setShowLoginModal(true);
                 removeMessageById(modelMsgId);

@@ -109,7 +109,7 @@ export default function MyReposPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl transition-all shadow-lg shadow-purple-500/20 text-sm font-medium"
                     >
                         <Lock className="w-4 h-4" />
-                        Unlock Private Repos
+                        Connect GitHub for Private Repos
                     </button>
                 )}
             </div>

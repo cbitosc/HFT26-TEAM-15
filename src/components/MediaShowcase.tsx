@@ -2,12 +2,11 @@
 
 import { motion } from "framer-motion";
 import { Youtube, BookOpen, ArrowRight } from "lucide-react";
-import Image from "next/image";
 
 const mediaItems = [
     {
         title: "I wasted 6 hours reading a repo...",
-        description: "How RepoMind solves the 80% of developer time wasted on building context manually.",
+        description: "How CodeCompass solves the 80% of developer time wasted on building context manually.",
         type: "Article",
         platform: "Medium",
         url: "https://medium.com/@pieisnot22by7/i-wasted-6-hours-reading-a-repo-even-after-having-claude-max-80b0be4a9ca6",
@@ -15,7 +14,7 @@ const mediaItems = [
         color: "emerald",
     },
     {
-        title: "Official Demo: RepoMind Workflow",
+        title: "Official Demo: CodeCompass Workflow",
         description: "Watch how to go from a GitHub URL to a full architectural map and security report in seconds.",
         type: "Video",
         platform: "YouTube",
@@ -34,7 +33,7 @@ export default function MediaShowcase() {
                         Deep Dives & <span className="text-blue-500">Demos</span>
                     </h2>
                     <p className="text-zinc-400 text-lg max-w-2xl">
-                        Explore the stories and technical deep dives behind RepoMind&apos;s creation.
+                        Explore the stories and technical deep dives behind CodeCompass&apos;s creation.
                     </p>
                 </div>
 

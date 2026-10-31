@@ -50,7 +50,7 @@ export const footerLinks = {
     ]
 };
 
-export default function Footer() {
+export default function Footer({ brandName = "RepoMind" }: { brandName?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const email = "pieisnot22by7@gmail.com";
@@ -75,7 +75,7 @@ export default function Footer() {
                     <div className="lg:col-span-4 space-y-6">
                         <Link href="/" className="flex items-center gap-3 group">
                             <div>
-                                <h2 className="text-xl font-bold text-white tracking-tight group-hover:text-cyan-400 transition-colors">RepoMind</h2>
+                                <h2 className="text-xl font-bold text-white tracking-tight group-hover:text-cyan-400 transition-colors">{brandName}</h2>
                                 <p className="text-zinc-500 text-xs font-medium uppercase tracking-widest">Repository Intelligence</p>
                             </div>
                         </Link>
@@ -215,7 +215,7 @@ export default function Footer() {
                 <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
                         <p className="text-zinc-600 text-[11px] font-medium tracking-tight">
-                            © {new Date().getFullYear()} REPOMIND. BUILT BY DEVELOPERS FOR DEVELOPERS.
+                            © {new Date().getFullYear()} {brandName.toUpperCase()}. BUILT BY DEVELOPERS FOR DEVELOPERS.
                         </p>
                         <div className="flex items-center gap-4 text-zinc-500 text-[11px] font-medium">
                             <span className="flex items-center gap-1.5 cursor-default hover:text-zinc-300 transition-colors">

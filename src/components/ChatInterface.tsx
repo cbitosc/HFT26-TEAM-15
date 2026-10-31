@@ -876,7 +876,7 @@ export function ChatInterface({ repoContext, onToggleSidebar, initialPrompt }: C
                 });
                 setLoginModalCopy({
                     title: "Sign In Required",
-                    description: "Please sign in with GitHub to continue repo analysis features.",
+                    description: "Please sign in with Google to continue repo analysis features.",
                 });
                 setShowLoginModal(true);
                 removeMessageById(modelMsgId);

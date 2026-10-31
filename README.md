@@ -123,17 +123,17 @@ RepoMind includes a verification-first scanning flow for application and depende
 
 ## Repository Intelligence
 
-Repository profiles include a deterministic source intelligence workspace. It records the branch and commit analyzed, reports file coverage, extracts source imports/routes/symbols, inventories dependencies, and links findings to the inspected GitHub blob. A bounded interactive import graph and source explorer help navigate unfamiliar repositories. Exact dependency versions are checked against OSV; ranges and unavailable lookups remain clearly labeled.
+Repository profiles include a deterministic source intelligence workspace. It records the branch and commit analyzed, reports file coverage, extracts source imports/routes/symbols and entry points, inventories dependencies, and links findings to the inspected GitHub blob. A bounded interactive architecture graph and source explorer help navigate unfamiliar repositories. Its data-flow view traces statically resolved call paths from detected entry points; it does not claim variable-level lineage or runtime behavior. Exact dependency versions are checked against OSV; ranges and unavailable lookups remain clearly labeled.
 
 Analyses never execute repository code. Public repository analysis works with the app's configured GitHub access; private repository analysis requires an authenticated account with server-side GitHub authorization. OAuth credentials are not exposed in browser session data.
 
 See [Repository Intelligence setup, API, limits and known limitations](docs/repository-intelligence.md). Local development uses SQLite; see [deployment notes](docs/deployment.md) for persistence requirements and the Vercel limitation.
 
-You can also select **Upload a ZIP instead** from the homepage to inspect a source archive without linking it to a GitHub repository. ZIP analysis covers source structure, imports, technologies, dependency inventory, supported OSV checks, and an in-browser source explorer. The source explorer includes a directed file/class/function graph with statically resolved call links. It does not enable GitHub chat, profile features, or repository security scans for the uploaded archive.
+You can also select **Upload a ZIP instead** from the homepage to inspect a source archive without linking it to a GitHub repository. ZIP analysis covers source structure, imports, entry points, technologies, dependency inventory, supported OSV checks, and an in-browser source explorer. The source explorer includes a directed file/class/function graph and a static call-flow view from detected entry points. It does not enable GitHub chat, profile features, or repository security scans for the uploaded archive.
 
 ### Collaboration rooms
 
-Signed-in developers can create invite-only rooms for a shared goal, optionally attach a GitHub repository, discuss progress, and maintain a shared task board. Room owners can create or rotate a single-use invite secret; invite links require GitHub sign-in. Each room supports up to eight members. Room discussion refreshes every eight seconds; this is polling, not live WebSocket chat. See [collaboration room implementation and API](docs/collaboration-rooms.md).
+Signed-in developers can create invite-only rooms for a shared goal, optionally attach a GitHub repository, discuss progress, and maintain a shared task board. Room owners can create or rotate a single-use invite secret; invite links require Google sign-in. Each room supports up to eight members. Room discussion refreshes every eight seconds; this is polling, not live WebSocket chat. See [collaboration room implementation and API](docs/collaboration-rooms.md).
 
 ## Dashboard Experience
 
@@ -172,7 +172,7 @@ npm run prisma:generate
 npm run dev
 ```
 
-Set `DATABASE_URL="file:./dev.db"` in `.env.local`. `npm run dev` creates the local SQLite file and applies its migrations automatically. Sign-in supports GitHub (`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET`) and Google (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`); configure at least one provider and `AUTH_SECRET`. GitHub repository analysis needs `GITHUB_TOKEN`; grounded AI chat needs `GEMINI_API_KEY`. Google sign-in does not grant access to private GitHub repositories. Keep credentials server-side. See [repository intelligence setup](docs/repository-intelligence.md) and [deployment notes](docs/deployment.md).
+Set `DATABASE_URL="file:./dev.db"` in `.env.local`. `npm run dev` creates the local SQLite file and applies its migrations automatically. General sign-in uses Google (`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET`) and `AUTH_SECRET`. GitHub OAuth (`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET`) is only for connecting a GitHub account to access private repositories. GitHub repository analysis needs `GITHUB_TOKEN`; grounded AI chat needs `GEMINI_API_KEY`. Google sign-in does not grant access to private GitHub repositories. Keep credentials server-side. See [repository intelligence setup](docs/repository-intelligence.md) and [deployment notes](docs/deployment.md).
 
 Open [http://localhost:3000](http://localhost:3000). The existing application has additional integrations (KV, Blob, Resend) for their respective features; see `.env.example` for their settings.
 
